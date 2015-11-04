@@ -1,0 +1,31 @@
+{
+    "name": "rox",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "out": "./src/game/app.js"
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./node_modules/**/*.ts"
+    ],
+    "files": [
+        "./src/game/app.ts",
+        "./src/game/remoteplayer.ts",
+        "./src/sprite/player.ts",
+        "./src/state/boot.ts",
+        "./src/state/game.ts",
+        "./src/state/mainmenu.ts",
+        "./src/state/preloader.ts",
+        "./src/typing/p2.d.ts",
+        "./src/typing/phaser.comments.d.ts",
+        "./src/typing/phaser.d.ts",
+        "./src/typing/pixi.comments.d.ts",
+        "./src/typing/pixi.d.ts",
+        "./src/typing/socket.io-client.d.ts"
+    ]
+}
