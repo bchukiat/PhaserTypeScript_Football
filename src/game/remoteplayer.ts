@@ -1,15 +1,15 @@
-module GameModule{
+module GameModule {
   export class RemotePlayer {
-    game:Phaser.Game;
-    x:number;
-    y:number;
-    index:string;
-    health:number;
-    alive:boolean;
-    player:Phaser.Sprite;
-    lastPosition:position2d;
+    game: Phaser.Game;
+    x: number;
+    y: number;
+    index: string;
+    health: number;
+    alive: boolean;
+    player: Phaser.Sprite;
+    lastPosition: position2d;
 
-    constructor(index:string, game:Phaser.Game, player:Phaser.Sprite, startX:number, startY:number){
+    constructor(index: string, game: Phaser.Game, player: Phaser.Sprite, startX: number, startY: number) {
       this.game = game;
       this.index = index;
       this.x = startX;
@@ -26,8 +26,8 @@ module GameModule{
       return this;
     }
 
-    update(){
-      if(this.player.x != this.lastPosition.x || this.player.y != this.lastPosition.y) {
+    update() {
+      if (this.player.x != this.lastPosition.x || this.player.y != this.lastPosition.y) {
         this.player.play('move');
         this.player.rotation = Math.PI + this.game.physics.arcade.angleToXY(this.player, this.lastPosition.x, this.lastPosition.y);
       }
@@ -44,7 +44,7 @@ module GameModule{
   }
 
   interface position2d {
-      x:number;
-      y:number;
+    x: number;
+    y: number;
   }
 }

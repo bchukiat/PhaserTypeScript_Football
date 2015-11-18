@@ -1,24 +1,24 @@
-module GameModule.State{
-  export class Game extends Phaser.State{
+module GameModule.State {
+  export class Game extends Phaser.State {
     game: Phaser.Game;
-    socket:SocketIOClient.Socket;
-    opt:any;
-    land:Phaser.TileSprite;
+    socket: SocketIOClient.Socket;
+    opt: any;
+    land: Phaser.TileSprite;
     //player:GameModule.Sprite.Player;
-    player:Phaser.Sprite;
-    players:Phaser.Group;
-    enemies:GameModule.RemotePlayer[];
-    cursors:Phaser.CursorKeys;
-    currentSpeed:number = 0;
+    player: Phaser.Sprite;
+    players: Phaser.Group;
+    enemies: GameModule.RemotePlayer[];
+    cursors: Phaser.CursorKeys;
+    currentSpeed: number = 0;
 
-    constructor(game:Phaser.Game) {
+    constructor(game: Phaser.Game) {
       super();
       this.game = game;
     }
 
-    create(){
+    create() {
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-      this.opt = {port: 8120, transports: ["websocket"]};
+      this.opt = { port: 8120, transports: ["websocket"] };
       this.socket = io.connect("http://localhost", this.opt);
 
       //  Resize our game world to be a 2000 x 2000 square
@@ -29,8 +29,8 @@ module GameModule.State{
       this.land.fixedToCamera = true;
 
       //  The base of our player
-      var startx = Math.abs(Math.round(Math.random()*(1000)-500));
-      var starty = Math.abs(Math.round(Math.random()*(1000)-500));
+      var startx = Math.abs(Math.round(Math.random() * (1000) - 500));
+      var starty = Math.abs(Math.round(Math.random() * (1000) - 500));
 
       // Using group to add created player sprite to state
       this.players = this.add.group();
@@ -47,20 +47,20 @@ module GameModule.State{
       this.cursors = this.game.input.keyboard.createCursorKeys();
 
       // Socket connection successful
-      this.socket.on("connect",()=>{
+      this.socket.on("connect", () => {
         console.log("Connected to socket server");
 
         // Send local player data to the game server
-        this.socket.emit("new player", {x: this.player.x, y:this.player.y});
+        this.socket.emit("new player", { x: this.player.x, y: this.player.y });
       });
 
       // Socket disconnection
-      this.socket.on("disconnect",()=>{
+      this.socket.on("disconnect", () => {
         console.log("Disconnected from socket server");
       });
 
       // New player message received
-      this.socket.on("new player",(data:socket_data)=>{
+      this.socket.on("new player", (data: socket_data) => {
         console.log("New player connected: " + data.id);
         console.log(data);
         // Add new player to the remote players array
@@ -70,13 +70,13 @@ module GameModule.State{
       });
 
       // Player move message received
-      this.socket.on("move player",(data:socket_data)=>{
+      this.socket.on("move player", (data: socket_data) => {
         var movePlayer = this.playerById(data.id);
 
         // Player not found
         if (!movePlayer) {
-            console.log("Player not found: "+data.id);
-            return;
+          console.log("Player not found: " + data.id);
+          return;
         };
 
         // Update player position
@@ -85,13 +85,13 @@ module GameModule.State{
       });
 
       // Player removed message received
-      this.socket.on("remove player",(data:socket_data)=>{
+      this.socket.on("remove player", (data: socket_data) => {
         var removePlayer = this.playerById(data.id);
 
         // Player not found
         if (!removePlayer) {
-            console.log("Player not found: "+data.id);
-            return;
+          console.log("Player not found: " + data.id);
+          return;
         };
 
         removePlayer.player.kill();
@@ -102,83 +102,73 @@ module GameModule.State{
 
     }
 
-    playerById(id:string):GameModule.RemotePlayer{
+    playerById(id: string): GameModule.RemotePlayer {
       for (var i = 0; i < this.enemies.length; i++) {
-          if (this.enemies[i].player.name == id){
-              return this.enemies[i];
-          }
+        if (this.enemies[i].player.name == id) {
+          return this.enemies[i];
+        }
       };
 
       return null;
     }
 
-    update(){
-      for (var i = 0; i < this.enemies.length; i++)
-      {
-          if (this.enemies[i].alive)
-          {
-              this.enemies[i].update();
-              this.game.physics.arcade.collide(this.player, this.enemies[i].player);
-          }
+    update() {
+      for (var i = 0; i < this.enemies.length; i++) {
+        if (this.enemies[i].alive) {
+          this.enemies[i].update();
+          this.game.physics.arcade.collide(this.player, this.enemies[i].player);
+        }
       }
 
-      if (this.cursors.left.isDown)
-      {
-          this.player.angle -= 4;
+      if (this.cursors.left.isDown) {
+        this.player.angle -= 4;
       }
-      else if (this.cursors.right.isDown)
-      {
-          this.player.angle += 4;
+      else if (this.cursors.right.isDown) {
+        this.player.angle += 4;
       }
 
-      if (this.cursors.up.isDown)
-      {
-          //  The speed we'll travel at
-          this.currentSpeed = 300;
+      if (this.cursors.up.isDown) {
+        //  The speed we'll travel at
+        this.currentSpeed = 300;
       }
-      else
-      {
-          if (this.currentSpeed > 0)
-          {
-              this.currentSpeed -= 4;
-          }
+      else {
+        if (this.currentSpeed > 0) {
+          this.currentSpeed -= 4;
+        }
       }
 
-      if (this.currentSpeed > 0)
-      {
-          this.game.physics.arcade.velocityFromRotation(this.player.rotation, this.currentSpeed, this.player.body.velocity);
-          this.player.animations.play('move');
+      if (this.currentSpeed > 0) {
+        this.game.physics.arcade.velocityFromRotation(this.player.rotation, this.currentSpeed, this.player.body.velocity);
+        this.player.animations.play('move');
       }
-      else
-      {
-          this.player.animations.play('stop');
+      else {
+        this.player.animations.play('stop');
       }
 
       this.land.tilePosition.x = -this.game.camera.x;
       this.land.tilePosition.y = -this.game.camera.y;
 
-      if (this.game.input.activePointer.isDown)
-      {
-          if (this.game.physics.arcade.distanceToPointer(this.player) >= 10) {
-              this.currentSpeed = 300;
-              this.player.rotation = this.game.physics.arcade.angleToPointer(this.player);
-          }
+      if (this.game.input.activePointer.isDown) {
+        if (this.game.physics.arcade.distanceToPointer(this.player) >= 10) {
+          this.currentSpeed = 300;
+          this.player.rotation = this.game.physics.arcade.angleToPointer(this.player);
+        }
       }
 
-      this.socket.emit("move player", {x: this.player.x, y:this.player.y});
+      this.socket.emit("move player", { x: this.player.x, y: this.player.y });
 
     }
 
-    render(){
+    render() {
 
     }
 
   }
 
   interface socket_data {
-      id:string;
-      x:number;
-      y:number;
+    id: string;
+    x: number;
+    y: number;
   }
 
 }
