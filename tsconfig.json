@@ -14,6 +14,7 @@
     "!./node_modules/**/*.ts"
   ],
   "files": [
+    "./src/aux/utl.ts",
     "./src/game/app.ts",
     "./src/game/remoteplayer.ts",
     "./src/sprite/ball.ts",

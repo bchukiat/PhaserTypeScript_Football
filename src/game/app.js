@@ -208,7 +208,7 @@ var GameModule;
                 this.balls.add(this.ball);
                 this.ball.body.collideWorldBounds = true;
                 this.ball.body.maxVelocity.setTo(400, 400);
-                this.ball.body.bounce.x = this.ball.body.bounce.y = 0.4;
+                this.ball.body.bounce.x = this.ball.body.bounce.y = 0.8;
                 this.ball.body.drag.x = this.ball.body.drag.y = 3;
                 this.socket.on("connect", function () {
                     console.log("Connected to socket server");
@@ -233,6 +233,15 @@ var GameModule;
                     ;
                     movePlayer.player.x = data.x;
                     movePlayer.player.y = data.y;
+                });
+                this.socket.on("start ball", function (data) {
+                    _this.ball.position.x = data.x;
+                    _this.ball.position.y = data.y;
+                });
+                this.socket.on("move ball", function (data) {
+                    _this.ball.animations.play("stop", 10, true);
+                    _this.ball.position.x = data.x;
+                    _this.ball.position.y = data.y;
                 });
                 this.socket.on("remove player", function (data) {
                     var removePlayer = _this.playerById(data.id);
@@ -273,12 +282,12 @@ var GameModule;
                     this.ball.animations.play("stop", 10, true);
                 }
                 else {
-                    var fr = 10;
                     var velx = Math.floor(Math.abs(this.ball.body.velocity.x));
                     var vely = Math.floor(Math.abs(this.ball.body.velocity.y));
                     var vel = velx > vely ? velx : vely;
                     vel = Math.floor(vel / 6);
                     this.ball.animations.play("move", vel, false);
+                    this.socket.emit("move ball", { x: this.ball.x, y: this.ball.y });
                 }
                 if (this.cursors.left.isDown) {
                     this.player.angle -= 4;

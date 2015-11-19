@@ -4,12 +4,12 @@ module GameModule.State {
     socket: SocketIOClient.Socket;
     opt: any;
     land: Phaser.TileSprite;
-    //player:GameModule.Sprite.Player;
+    //player:Sprite.Player;
     player: Phaser.Sprite;
     ball: Phaser.Sprite;
     players: Phaser.Group;
     balls:Phaser.Group;
-    enemies: GameModule.RemotePlayer[];
+    enemies: RemotePlayer[];
     cursors: Phaser.CursorKeys;
     currentSpeed: number = 0;
 
@@ -37,7 +37,7 @@ module GameModule.State {
 
       // Using group to add created player sprite to state
       this.players = this.add.group();
-      this.player = new GameModule.Sprite.Player(this, startx, starty, 'dude');
+      this.player = new Sprite.Player(this, startx, starty, 'dude');
       this.players.add(this.player);
 
       this.player.body.maxVelocity.setTo(100, 100);
@@ -58,7 +58,7 @@ module GameModule.State {
       this.balls.add(this.ball);
       this.ball.body.collideWorldBounds = true;
       this.ball.body.maxVelocity.setTo(400, 400);
-      this.ball.body.bounce.x = this.ball.body.bounce.y = 0.4;
+      this.ball.body.bounce.x = this.ball.body.bounce.y = 0.8;
       this.ball.body.drag.x = this.ball.body.drag.y = 3;
 
       // Socket connection successful
@@ -79,7 +79,7 @@ module GameModule.State {
         console.log("New player connected: " + data.id);
         console.log(data);
         // Add new player to the remote players array
-        var remoteplayer = new GameModule.RemotePlayer(data.id, this.game, this.player, data.x, data.y);
+        var remoteplayer = new RemotePlayer(data.id, this.game, this.player, data.x, data.y);
         this.players.add(remoteplayer.player);
         this.enemies.push(remoteplayer);
       });
@@ -97,6 +97,21 @@ module GameModule.State {
         // Update player position
         movePlayer.player.x = data.x;
         movePlayer.player.y = data.y;
+      });
+
+      this.socket.on("start ball", (data: socket_data) => {
+        //console.log("ball start " + data.x + ":" + data.y);
+        this.ball.position.x = data.x;
+        this.ball.position.y = data.y;
+      });
+
+      this.socket.on("move ball", (data: socket_data) => {
+        //console.log("ball start " + data.x + ":" + data.y);
+        this.ball.animations.play("stop",10,true);
+        this.ball.position.x = data.x;
+        this.ball.position.y = data.y;
+
+
       });
 
       // Player removed message received
@@ -117,7 +132,7 @@ module GameModule.State {
 
     }
 
-    playerById(id: string): GameModule.RemotePlayer {
+    playerById(id: string): RemotePlayer {
       for (var i = 0; i < this.enemies.length; i++) {
         if (this.enemies[i].player.name == id) {
           return this.enemies[i];
@@ -151,12 +166,12 @@ module GameModule.State {
         this.ball.animations.play("stop",10,true); // Stop ball animation, when it does not move
       }else {
         //If ball is moving, play animations which frame rate up to the ball velocity
-        var fr:number = 10;
         var velx = Math.floor(Math.abs(this.ball.body.velocity.x));
         var vely = Math.floor(Math.abs(this.ball.body.velocity.y));
         var vel = velx > vely ? velx : vely;
         vel = Math.floor(vel/6);
         this.ball.animations.play("move",vel,false);
+        this.socket.emit("move ball", { x: this.ball.x, y: this.ball.y });
       }
 
       if (this.cursors.left.isDown) {
@@ -204,10 +219,6 @@ module GameModule.State {
 
   }
 
-  interface socket_data {
-    id: string;
-    x: number;
-    y: number;
-  }
+
 
 }

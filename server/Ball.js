@@ -2,7 +2,7 @@
  ** GAME BALL CLASS
  **************************************************/
 var Ball = function(startX, startY) {
-  var x = startX, y = startY, id;
+  var x = startX, y = startY;
 
   // Getters and setters
   var getX = function() {
@@ -26,8 +26,7 @@ var Ball = function(startX, startY) {
     getX: getX,
     getY: getY,
     setX: setX,
-    setY: setY,
-    id: id
+    setY: setY
   }
 };
 

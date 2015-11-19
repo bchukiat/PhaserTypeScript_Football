@@ -18,7 +18,7 @@ module GameModule {
       this.alive = true;
       this.player = player;
 
-      this.player = new GameModule.Sprite.Player(this, this.x, this.y, 'enemy');
+      this.player = new Sprite.Player(this, this.x, this.y, 'enemy');
       this.player.name = index.toString();
       this.player.body.immovable = true;
       this.lastPosition = { x: this.x, y: this.y };
@@ -43,8 +43,5 @@ module GameModule {
 
   }
 
-  interface position2d {
-    x: number;
-    y: number;
-  }
+
 }

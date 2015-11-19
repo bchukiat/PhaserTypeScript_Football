@@ -58,6 +58,8 @@ function onSocketConnection(client) {
 
   // Listen for move player message
   client.on("move player", onMovePlayer);
+
+  client.on("move ball", onMoveBall);
 };
 
 // Socket client has disconnected
@@ -108,6 +110,38 @@ function onNewPlayer(data) {
 
   // Add new player to the players array
   players.push(newPlayer);
+
+  var ballx = 0, bally = 0;
+  if(ball){
+    ballx = ball.getX();
+    bally = ball.getY();
+  }
+  else {
+    ballx = data.x;
+    bally = data.y;
+    ball = new Ball(ballx,bally);
+  }
+  // Emit to everyone include sender
+  socket.sockets.emit("start ball", {
+    x: ballx,
+    y: bally
+  });
+
+
+  /*
+  util.log(players.length);
+  if(players.length == 1){
+    util.log("create ball " + data.x + ":" + data.y);
+    ball = new Ball(data.x, data.y);
+  }
+  else {
+    util.log("ball has been already " + ball.getX() + ":" + ball.getY());
+    this.broadcast.emit("move ball", {
+      x: ball.getX(),
+      y: ball.getY()
+    });
+  }*/
+
 };
 
 // Player has moved
@@ -132,6 +166,12 @@ function onMovePlayer(data) {
     y: movePlayer.getY()
   });
 };
+
+function onMoveBall(data) {
+  this.broadcast.emit("move ball", {
+    x:data.x, y:data.y
+  });
+}
 
 
 /**************************************************
