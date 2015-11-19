@@ -27,6 +27,7 @@ module GameModule.State {
       this.game.load.image('earth', 'asset/image/light_sand.png');
       this.game.load.spritesheet('dude', 'asset/image/dude.png', 64, 64);
       this.game.load.spritesheet('enemy', 'asset/image/dude.png', 64, 64);
+      this.game.load.spritesheet('ball', 'asset/image/ui_ball.png', 64, 64);
       //console.log("preload");
     }
 

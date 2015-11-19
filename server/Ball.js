@@ -1,7 +1,7 @@
 /**************************************************
- ** GAME PLAYER CLASS
+ ** GAME BALL CLASS
  **************************************************/
-var Player = function(startX, startY) {
+var Ball = function(startX, startY) {
   var x = startX, y = startY, id;
 
   // Getters and setters
@@ -31,6 +31,6 @@ var Player = function(startX, startY) {
   }
 };
 
-// Export the Player class so you can use it in
-// other files by using require("Player").Player
-exports.Player = Player;
+// Export the Ballclass so you can use it in
+// other files by using require("Ball").Ball
+exports.Ball = Ball;

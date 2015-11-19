@@ -6,7 +6,9 @@ module GameModule.State {
     land: Phaser.TileSprite;
     //player:GameModule.Sprite.Player;
     player: Phaser.Sprite;
+    ball: Phaser.Sprite;
     players: Phaser.Group;
+    balls:Phaser.Group;
     enemies: GameModule.RemotePlayer[];
     cursors: Phaser.CursorKeys;
     currentSpeed: number = 0;
@@ -28,6 +30,7 @@ module GameModule.State {
       this.land = this.game.add.tileSprite(0, 0, 800, 600, 'earth');
       this.land.fixedToCamera = true;
 
+
       //  The base of our player
       var startx = Math.abs(Math.round(Math.random() * (1000) - 500));
       var starty = Math.abs(Math.round(Math.random() * (1000) - 500));
@@ -37,14 +40,26 @@ module GameModule.State {
       this.player = new GameModule.Sprite.Player(this, startx, starty, 'dude');
       this.players.add(this.player);
 
-      this.player.body.maxVelocity.setTo(400, 400);
+      this.player.body.maxVelocity.setTo(100, 100);
       this.player.body.collideWorldBounds = true;
+      this.player.body.drag.x = this.player.body.drag.y = 5;
 
       this.enemies = [];
       this.game.camera.follow(this.player);
       this.game.camera.deadzone = new Phaser.Rectangle(150, 150, 500, 300);
       this.game.camera.focusOnXY(0, 0);
       this.cursors = this.game.input.keyboard.createCursorKeys();
+
+      var ballx = startx;
+      var bally = starty;
+      this.balls = this.add.group();
+      this.ball = new Sprite.Ball(this,ballx, bally, 'ball');
+      this.ball.scale.x = this.ball.scale.y = 0.5;
+      this.balls.add(this.ball);
+      this.ball.body.collideWorldBounds = true;
+      this.ball.body.maxVelocity.setTo(400, 400);
+      this.ball.body.bounce.x = this.ball.body.bounce.y = 0.4;
+      this.ball.body.drag.x = this.ball.body.drag.y = 3;
 
       // Socket connection successful
       this.socket.on("connect", () => {
@@ -117,7 +132,31 @@ module GameModule.State {
         if (this.enemies[i].alive) {
           this.enemies[i].update();
           this.game.physics.arcade.collide(this.player, this.enemies[i].player);
+          this.game.physics.arcade.collide(this.ball, this.enemies[i].player, ()=>{
+
+          }, ()=>{
+
+          });
         }
+      }
+
+      this.game.physics.arcade.collide(this.player, this.ball, ()=>{
+        this.ball.animations.play("stop",10,true);
+
+      }, ()=>{
+
+      });
+
+      if(Phaser.Point.equals(this.ball.body.velocity, new Phaser.Point(0,0))){
+        this.ball.animations.play("stop",10,true); // Stop ball animation, when it does not move
+      }else {
+        //If ball is moving, play animations which frame rate up to the ball velocity
+        var fr:number = 10;
+        var velx = Math.floor(Math.abs(this.ball.body.velocity.x));
+        var vely = Math.floor(Math.abs(this.ball.body.velocity.y));
+        var vel = velx > vely ? velx : vely;
+        vel = Math.floor(vel/6);
+        this.ball.animations.play("move",vel,false);
       }
 
       if (this.cursors.left.isDown) {

@@ -95260,6 +95260,31 @@ var GameModule;
 (function (GameModule) {
     var Sprite;
     (function (Sprite) {
+        var Ball = (function (_super) {
+            __extends(Ball, _super);
+            function Ball(state, start_x, start_y, ball_sprite) {
+                this.game = state.game;
+                this.state = state;
+                this.startx = start_x;
+                this.starty = start_y;
+                _super.call(this, this.game, this.startx, this.starty, ball_sprite);
+                this.anchor.setTo(0.5, 0.5);
+                this.animations.add('move', [0, 1, 2, 3, 4, 5, 6], 20, true);
+                this.animations.add('stop', [3], 20, true);
+                this.angle = this.game.rnd.angle();
+                this.bringToTop();
+                this.game.physics.enable(this, Phaser.Physics.ARCADE);
+                return this;
+            }
+            return Ball;
+        })(Phaser.Sprite);
+        Sprite.Ball = Ball;
+    })(Sprite = GameModule.Sprite || (GameModule.Sprite = {}));
+})(GameModule || (GameModule = {}));
+var GameModule;
+(function (GameModule) {
+    var Sprite;
+    (function (Sprite) {
         var Player = (function (_super) {
             __extends(Player, _super);
             function Player(state, start_x, start_y, player_sprite) {
@@ -95366,13 +95391,24 @@ var GameModule;
                 this.players = this.add.group();
                 this.player = new GameModule.Sprite.Player(this, startx, starty, 'dude');
                 this.players.add(this.player);
-                this.player.body.maxVelocity.setTo(400, 400);
+                this.player.body.maxVelocity.setTo(100, 100);
                 this.player.body.collideWorldBounds = true;
+                this.player.body.drag.x = this.player.body.drag.y = 5;
                 this.enemies = [];
                 this.game.camera.follow(this.player);
                 this.game.camera.deadzone = new Phaser.Rectangle(150, 150, 500, 300);
                 this.game.camera.focusOnXY(0, 0);
                 this.cursors = this.game.input.keyboard.createCursorKeys();
+                var ballx = startx;
+                var bally = starty;
+                this.balls = this.add.group();
+                this.ball = new GameModule.Sprite.Ball(this, ballx, bally, 'ball');
+                this.ball.scale.x = this.ball.scale.y = 0.5;
+                this.balls.add(this.ball);
+                this.ball.body.collideWorldBounds = true;
+                this.ball.body.maxVelocity.setTo(400, 400);
+                this.ball.body.bounce.x = this.ball.body.bounce.y = 0.4;
+                this.ball.body.drag.x = this.ball.body.drag.y = 3;
                 this.socket.on("connect", function () {
                     console.log("Connected to socket server");
                     _this.socket.emit("new player", { x: _this.player.x, y: _this.player.y });
@@ -95418,11 +95454,30 @@ var GameModule;
                 return null;
             };
             Game.prototype.update = function () {
+                var _this = this;
                 for (var i = 0; i < this.enemies.length; i++) {
                     if (this.enemies[i].alive) {
                         this.enemies[i].update();
                         this.game.physics.arcade.collide(this.player, this.enemies[i].player);
+                        this.game.physics.arcade.collide(this.ball, this.enemies[i].player, function () {
+                        }, function () {
+                        });
                     }
+                }
+                this.game.physics.arcade.collide(this.player, this.ball, function () {
+                    _this.ball.animations.play("stop", 10, true);
+                }, function () {
+                });
+                if (Phaser.Point.equals(this.ball.body.velocity, new Phaser.Point(0, 0))) {
+                    this.ball.animations.play("stop", 10, true);
+                }
+                else {
+                    var fr = 10;
+                    var velx = Math.floor(Math.abs(this.ball.body.velocity.x));
+                    var vely = Math.floor(Math.abs(this.ball.body.velocity.y));
+                    var vel = velx > vely ? velx : vely;
+                    vel = Math.floor(vel / 6);
+                    this.ball.animations.play("move", vel, false);
                 }
                 if (this.cursors.left.isDown) {
                     this.player.angle -= 4;
@@ -95516,6 +95571,7 @@ var GameModule;
                 this.game.load.image('earth', 'asset/image/light_sand.png');
                 this.game.load.spritesheet('dude', 'asset/image/dude.png', 64, 64);
                 this.game.load.spritesheet('enemy', 'asset/image/dude.png', 64, 64);
+                this.game.load.spritesheet('ball', 'asset/image/ui_ball.png', 64, 64);
             };
             Preloader.prototype.create = function () {
                 this.game.state.start('Game');
